@@ -1,1 +1,0 @@
-SpongeAPI\gradlew.bat %*
