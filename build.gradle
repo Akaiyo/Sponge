@@ -1,7 +1,7 @@
 buildscript {
     repositories {
-        mavenCentral()
         jcenter()
+        mavenCentral()
         maven {
             name = 'forge'
             url = 'http://files.minecraftforge.net/maven'
@@ -180,10 +180,12 @@ configure(minecraftProjects) {
 
     // License header formatting
     license {
-        ext.name = project.name
-        ext.organization = project.organization
-        ext.url = project.url
-        ext.year = project.inceptionYear
+        ext {
+            name = project.name
+            organization = project.organization
+            url = project.url
+            year = project.inceptionYear
+        }
 
         header project(':SpongeAPI').file('HEADER.txt')
         include '**/*.java'
