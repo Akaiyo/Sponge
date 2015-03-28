@@ -26,6 +26,9 @@ buildscript {
     }
 }
 
+// Default tasks
+defaultTasks 'licenseFormat', 'build'
+
 // Load SpongeAPI first
 evaluationDependsOn ':SpongeAPI'
 
