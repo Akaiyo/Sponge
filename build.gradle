@@ -1,0 +1,225 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven {
+            name = 'forge'
+            url = 'http://files.minecraftforge.net/maven'
+        }
+        maven {
+            name = 'sonatype'
+            url = 'https://oss.sonatype.org/content/groups/public'
+        }
+        maven {
+            name = 'minecrell-snapshots'
+            url = 'http://repo.minecrell.net/snapshots'
+        }
+    }
+
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+        classpath 'net.minecrell:VanillaGradle:1.0.1-SNAPSHOT'
+        classpath('nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0') {
+            exclude module: 'guava'
+        }
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.1'
+    }
+}
+
+// Load SpongeAPI first
+evaluationDependsOn ':SpongeAPI'
+
+// Define the projects we want to configure
+def common = project(':Common'), vanilla = project(':Vanilla'), forge = project(':Forge')
+def vanillaProjects = [common, vanilla], minecraftProjects = vanillaProjects + forge
+def implementations = [vanilla, forge]
+def projects = minecraftProjects + project
+
+// Set general properties
+configure(projects) {
+    group = 'org.spongepowered'
+    version = '2.0-SNAPSHOT' // TODO: For a unified JAR we also need a unified version (at least for the JAR itself)
+
+    ext {
+        buildNumber = project.hasProperty('buildNumber') ? buildNumber : '0'
+        ciSystem = project.hasProperty('ciSystem') ? ciSystem : 'unknown'
+        commit = project.hasProperty('commit') ? commit : 'unknown'
+    }
+}
+
+// Configure implementation before loading ForgeGradle plugin
+configure(minecraftProjects) {
+    repositories {
+        mavenCentral()
+        maven {
+            name = 'sponge'
+            url = 'http://repo.spongepowered.org/maven'
+        }
+        maven {
+            name = 'sonatype-snapshots'
+            url = 'https://oss.sonatype.org/content/repositories/snapshots'
+        }
+    }
+
+    // Mixins
+    ext {
+        mixinSrg = new File(project.buildDir, 'tmp/mixins/mixins.srg')
+        mixinRefMap = new File(project.buildDir, "tmp/mixins/mixins.${project.name.toLowerCase()}.refmap.json")
+    }
+}
+
+// Configure VanillaGradle
+configure(vanillaProjects) {
+    apply plugin: 'net.minecrell.vanilla'
+    ext.minecraftPlugin = plugins.getPlugin('net.minecrell.vanilla')
+
+    minecraft {
+        version = '1.8'
+    }
+}
+
+// Configure ForgeGradle
+configure(forge) {
+    apply plugin: 'forge'
+    ext.minecraftPlugin = plugins.getPlugin('forge')
+
+    minecraft {
+        version = '1.8-11.14.1.1344'
+    }
+}
+
+configure(minecraftProjects) {
+    // Set mappings version
+    minecraft {
+        mappings = 'snapshot_20150328'
+    }
+
+    // Set Java version // TODO: Java 8?
+    sourceCompatibility = '1.6'
+    targetCompatibility = '1.6'
+
+    // Testing dependencies
+    dependencies {
+        testCompile 'junit:junit:4.12'
+        testCompile 'org.mockito:mockito-core:1.10.19'
+    }
+
+    // Compile options
+    compileJava {
+        options.compilerArgs += [
+                '-Xlint:all',
+                '-Xlint:-path',
+                '-Xlint:-processing',
+                "-AoutSrgFile=${project.mixinSrg.canonicalPath}",
+                "-AoutRefMapFile=${project.mixinRefMap.canonicalPath}"
+        ]
+
+        options.deprecation = true
+        options.encoding = 'UTF-8'
+    }
+
+    afterEvaluate {
+        tasks.compileJava.options.compilerArgs += "-AreobfSrgFile=${tasks.reobf.srg}"
+    }
+
+    // Copy the current srgs to the build dir so the user doesn't have to go hunting for them
+    task copySrgs(type: Copy, dependsOn: 'genSrgs') {
+        from minecraftPlugin.delayedFile('{SRG_DIR}')
+
+        include '**/*.srg'
+        into 'build/srgs'
+    }
+
+    setupDecompWorkspace.dependsOn copySrgs
+    setupDevWorkspace.dependsOn copySrgs
+
+    // Configure reobfuscation for mixins
+    reobf {
+        addExtraSrgFile project.mixinSrg
+    }
+
+    // Set manifest entries
+    jar {
+        manifest {
+            attributes(
+                    'Specification-Name': 'SpongeAPI',
+                    'Specification-Version': project(':SpongeAPI').version,
+                    'Specification-Vendor': project(':SpongeAPI').url,
+                    'Implementation-Name': name,
+                    'Implementation-Version': version,
+                    'Implementation-Vendor': url,
+            )
+        }
+    }
+
+    // Apply shadow plugin
+    apply plugin: 'com.github.johnrengelman.shadow'
+
+    shadowJar {
+        classifier = ''
+
+        exclude 'GradleStart**'
+        exclude 'net/minecraftforge/**'
+
+        from project.mixinRefMap
+    }
+
+    // Run shadowJar on build
+    assemble.dependsOn shadowJar
+
+    // Apply code style plugins
+    apply plugin: 'license'
+    apply plugin: 'checkstyle'
+
+    dependencies {
+        // Add custom checkstyle dependency (fixes a few wrong warnings about imports and @param tags in annotations)
+        checkstyle 'org.spongepowered:checkstyle:6.1.1-sponge1'
+    }
+
+    // License header formatting
+    license {
+        ext.name = project.name
+        ext.organization = project.organization
+        ext.url = project.url
+        ext.year = project.inceptionYear
+
+        header project(':SpongeAPI').file('HEADER.txt')
+        include '**/*.java'
+
+        ignoreFailures false
+        strictCheck true
+
+        mapping {
+            java = 'SLASHSTAR_STYLE'
+        }
+    }
+
+    // Checkstyle settings
+    checkstyle {
+        configFile = project(':SpongeAPI').file('checkstyle.xml')
+        configProperties = [
+                'name' : project.name,
+                'organization' : project.organization,
+                'url' : project.url,
+                'year' : project.inceptionYear,
+                'basedir': project.projectDir,
+                'severity': 'warning'
+        ]
+    }
+}
+
+configure(implementations) {
+    dependencies {
+        compile common
+    }
+
+    shadowJar {
+        dependencies {
+            include dependency(common)
+        }
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.3'
+}
