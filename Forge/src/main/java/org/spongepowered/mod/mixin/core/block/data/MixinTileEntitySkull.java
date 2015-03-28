@@ -25,7 +25,6 @@
 package org.spongepowered.mod.mixin.core.block.data;
 
 import com.google.common.base.Optional;
-import net.minecraft.tileentity.TileEntity;
 import org.spongepowered.api.GameProfile;
 import org.spongepowered.api.block.data.Skull;
 import org.spongepowered.api.block.meta.SkullType;

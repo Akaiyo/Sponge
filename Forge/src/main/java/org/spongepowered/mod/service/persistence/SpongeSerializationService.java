@@ -33,7 +33,6 @@ import com.google.common.collect.Maps;
 import org.spongepowered.api.service.persistence.DataSerializable;
 import org.spongepowered.api.service.persistence.DataSerializableBuilder;
 import org.spongepowered.api.service.persistence.SerializationService;
-import org.spongepowered.mod.SpongeMod;
 
 import java.util.Map;
 
