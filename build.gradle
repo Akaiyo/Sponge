@@ -134,8 +134,10 @@ configure(minecraftProjects) {
     setupDevWorkspace.dependsOn copySrgs
 
     // Configure reobfuscation for mixins
-    reobf {
-        addExtraSrgFile project.mixinSrg
+    reobf.doFirst {
+        if (project.mixinSrg.exists()) {
+            addExtraSrgFile project.mixinSrg
+        }
     }
 
     // Set manifest entries
