@@ -24,20 +24,16 @@
  */
 package org.spongepowered.mod.mixin.core.block.data;
 
-import com.google.common.base.Optional;
+import static org.spongepowered.api.service.persistence.data.DataQuery.of;
+
 import net.minecraft.command.server.CommandBlockLogic;
-import net.minecraft.util.IChatComponent;
-import org.spongepowered.api.block.data.CommandBlock;
-import org.spongepowered.api.text.Text;
+import org.spongepowered.api.block.tile.CommandBlock;
 import org.spongepowered.api.service.persistence.data.DataContainer;
-import org.spongepowered.api.service.persistence.data.DataQuery;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.mod.text.SpongeChatComponent;
-import org.spongepowered.mod.text.SpongeText;
 
 @NonnullByDefault
 @Implements(@Interface(iface = CommandBlock.class, prefix = "command$"))
@@ -47,60 +43,23 @@ public abstract class MixinTileEntityCommandBlock extends MixinTileEntity {
     @Shadow
     public abstract CommandBlockLogic getCommandBlockLogic();
 
-    public String command$getStoredCommand() {
-        return getCommandBlockLogic().commandStored;
-    }
-
-    public void command$setStoredCommand(String command) {
-        getCommandBlockLogic().setCommand(command);
-    }
-
-    public int command$getSuccessCount() {
-        return getCommandBlockLogic().getSuccessCount();
-    }
-
-    public void command$setSuccessCount(int count) {
-        getCommandBlockLogic().successCount = count;
-    }
-
-    public boolean command$doesTrackOutput() {
-        return getCommandBlockLogic().shouldTrackOutput();
-    }
-
-    public void command$shouldTrackOutput(boolean track) {
-        getCommandBlockLogic().setTrackOutput(track);
-    }
-
-    public Optional<Text> command$getLastOutput() {
-        IChatComponent output = getCommandBlockLogic().getLastOutput();
-        if (output != null) {
-            return Optional.of(((SpongeChatComponent) output).toText());
-        }
-
-        return Optional.absent();
-    }
-
-    public void command$setLastOutput(Text message) {
-        getCommandBlockLogic().setLastOutput(((SpongeText) message).toComponent());
-    }
-
     void command$execute() {
-        getCommandBlockLogic().trigger((net.minecraft.world.World) getWorld());
+        getCommandBlockLogic().trigger(this.worldObj);
     }
 
     @Override
     @SuppressWarnings("deprecated")
     public DataContainer toContainer() {
         DataContainer container = super.toContainer();
-        container.set(new DataQuery("StoredCommand"), this.command$getStoredCommand());
-        container.set(new DataQuery("SuccessCount"), this.command$getSuccessCount());
-        container.set(new DataQuery("CustomName"), this.getCommandBlockLogic().getCustomName());
-        container.set(new DataQuery("DoesTrackOutput"), this.command$doesTrackOutput());
-        if (this.command$doesTrackOutput()) {
-            Optional<Text> message = this.command$getLastOutput();
-            if (message.isPresent()) {
-                container.set(new DataQuery("TrackedOutput"), message.get().toString());
-            }
+        container.set(of("StoredCommand"), this.getCommandBlockLogic().commandStored);
+        container.set(of("SuccessCount"), this.getCommandBlockLogic().successCount);
+        container.set(of("CustomName"), this.getCommandBlockLogic().getCustomName());
+        container.set(of("DoesTrackOutput"), this.getCommandBlockLogic().shouldTrackOutput());
+        if (this.getCommandBlockLogic().shouldTrackOutput()) {
+//            Optional<Text> message = this.getCommandBlockLogic().getLastOutput();
+//            if (message.isPresent()) {
+//                container.set(of("TrackedOutput"), message.get().toString());
+//            }
         }
         return container;
     }

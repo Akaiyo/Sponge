@@ -35,16 +35,12 @@ import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S02PacketChat;
 import net.minecraft.world.World;
+import org.apache.commons.lang3.LocaleUtils;
 import org.spongepowered.api.GameProfile;
 import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.entity.player.Player;
 import org.spongepowered.api.net.PlayerConnection;
-import org.spongepowered.api.service.ServiceReference;
 import org.spongepowered.api.service.permission.PermissionService;
-import org.spongepowered.api.service.permission.Subject;
-import org.spongepowered.api.service.permission.SubjectCollection;
-import org.spongepowered.api.service.permission.SubjectData;
-import org.spongepowered.api.service.permission.context.Context;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.chat.ChatType;
 import org.spongepowered.api.text.chat.ChatTypes;
@@ -53,27 +49,29 @@ import org.spongepowered.api.text.title.Titles;
 import org.spongepowered.api.util.Tristate;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.api.util.command.CommandSource;
+import org.spongepowered.api.world.Location;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.mod.SpongeMod;
 import org.spongepowered.mod.effect.particle.SpongeParticleEffect;
 import org.spongepowered.mod.effect.particle.SpongeParticleHelper;
+import org.spongepowered.mod.interfaces.Subjectable;
 import org.spongepowered.mod.text.SpongeChatComponent;
 import org.spongepowered.mod.text.SpongeText;
 import org.spongepowered.mod.text.chat.SpongeChatType;
 import org.spongepowered.mod.text.title.SpongeTitle;
+import org.spongepowered.mod.util.VecHelper;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
+
+import javax.annotation.Nullable;
 
 @NonnullByDefault
 @Mixin(EntityPlayerMP.class)
 @Implements(@Interface(iface = Player.class, prefix = "playermp$"))
-public abstract class MixinEntityPlayerMP extends EntityPlayer implements CommandSource {
+public abstract class MixinEntityPlayerMP extends EntityPlayer implements CommandSource, Subjectable {
 
     @Shadow
     private String translator;
@@ -81,10 +79,8 @@ public abstract class MixinEntityPlayerMP extends EntityPlayer implements Comman
     @Shadow
     public NetHandlerPlayServer playerNetServerHandler;
 
-    private ServiceReference<PermissionService> permService =
-            SpongeMod.instance.getGame().getServiceManager().potentiallyProvide(PermissionService.class);
-
-    private Subject thisSubject = null;
+    @Shadow
+    public int lastExperience;
 
     public MixinEntityPlayerMP(World worldIn, com.mojang.authlib.GameProfile gameprofile) {
         super(worldIn, gameprofile);
@@ -111,7 +107,7 @@ public abstract class MixinEntityPlayerMP extends EntityPlayer implements Comman
     }
 
     public Locale playermp$getLocale() {
-        return new Locale(this.translator);
+        return LocaleUtils.toLocale(this.translator);
     }
 
     public void playermp$sendMessage(Text... messages) {
@@ -174,109 +170,29 @@ public abstract class MixinEntityPlayerMP extends EntityPlayer implements Comman
         return (PlayerConnection) this.playerNetServerHandler;
     }
 
-    private Subject internalSubject() {
-        if (this.thisSubject == null) {
-            Optional<PermissionService> service = this.permService.ref();
-            if (service.isPresent()) {
-                SubjectCollection userSubjects = service.get().getUserSubjects();
-                if (userSubjects != null) {
-                    return this.thisSubject = userSubjects.get(getUniqueID().toString());
-                }
-            }
-        }
-        return this.thisSubject;
+    public void playermp$setBedLocation(@Nullable Location location) {
+        super.spawnChunk = location != null ? VecHelper.toBlockPos(location.getPosition()) : null;
+    }
+
+    // this needs to be overridden from EntityPlayer so we can force a resend of the experience level
+    public void playermp$setLevel(int level) {
+        this.experienceLevel = level;
+        this.lastExperience = -1;
+    }
+
+    @Override
+    public String getSubjectCollectionIdentifier() {
+        return PermissionService.SUBJECTS_USER;
     }
 
     @Override
     public String getIdentifier() {
-        Subject subj = internalSubject();
-        return subj == null ? getUniqueID().toString() : subj.getIdentifier();
+        return getUniqueID().toString();
     }
 
     @Override
-    public Optional<CommandSource> getCommandSource() {
-        return Optional.<CommandSource>of(this);
+    public Tristate permDefault(String permission) {
+        return Tristate.FALSE;
     }
 
-    @Override
-    public SubjectCollection getContainingCollection() {
-        Subject subj = internalSubject();
-        if (subj == null) {
-            throw new IllegalStateException("No subject present for player " + this);
-        } else {
-            return subj.getContainingCollection();
-        }
-    }
-
-    @Override
-    public SubjectData getData() {
-        Subject subj = internalSubject();
-        if (subj == null) {
-            throw new IllegalStateException("No subject present for player " + this);
-        } else {
-            return subj.getData();
-        }
-    }
-
-    @Override
-    public SubjectData getTransientData() {
-        Subject subj = internalSubject();
-        if (subj == null) {
-            throw new IllegalStateException("No subject present for player " + this);
-        } else {
-            return subj.getTransientData();
-        }
-    }
-
-    @Override
-    public boolean hasPermission(Set<Context> contexts, String permission) {
-        Subject subj = internalSubject();
-        return subj == null ? permDefault(permission) : subj.hasPermission(contexts, permission);
-    }
-
-    private boolean permDefault(String permission) {
-        return canCommandSenderUseCommand(4, permission);
-    }
-
-    @Override
-    public boolean hasPermission(String permission) {
-        Subject subj = internalSubject();
-        return subj == null ? permDefault(permission) : subj.hasPermission(permission);
-    }
-
-    @Override
-    public Tristate getPermissionValue(Set<Context> contexts, String permission) {
-        Subject subj = internalSubject();
-        return subj == null ? Tristate.UNDEFINED : subj.getPermissionValue(contexts, permission);
-    }
-
-    @Override
-    public boolean isChildOf(Subject parent) {
-        Subject subj = internalSubject();
-        return subj == null ? false : subj.isChildOf(parent);
-    }
-
-    @Override
-    public boolean isChildOf(Set<Context> contexts, Subject parent) {
-        Subject subj = internalSubject();
-        return subj == null ? false : subj.isChildOf(contexts, parent);
-    }
-
-    @Override
-    public List<Subject> getParents() {
-        Subject subj = internalSubject();
-        return subj == null ? Collections.<Subject>emptyList() : subj.getParents();
-    }
-
-    @Override
-    public List<Subject> getParents(Set<Context> contexts) {
-        Subject subj = internalSubject();
-        return subj == null ? Collections.<Subject>emptyList() : subj.getParents(contexts);
-    }
-
-    @Override
-    public Set<Context> getActiveContexts() {
-        Subject subj = internalSubject();
-        return subj == null ? Collections.<Context>emptySet() : subj.getActiveContexts();
-    }
 }

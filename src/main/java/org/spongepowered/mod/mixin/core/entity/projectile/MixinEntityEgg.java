@@ -25,8 +25,7 @@
 package org.spongepowered.mod.mixin.core.entity.projectile;
 
 import net.minecraft.entity.projectile.EntityEgg;
-import net.minecraft.entity.projectile.EntityThrowable;
-import net.minecraft.world.World;
+import net.minecraft.nbt.NBTTagCompound;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
@@ -37,16 +36,13 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 @NonnullByDefault
 @Mixin(EntityEgg.class)
 @Implements(@Interface(iface = org.spongepowered.api.entity.projectile.Egg.class, prefix = "egg$"))
-public abstract class MixinEntityEgg extends EntityThrowable {
+public abstract class MixinEntityEgg extends MixinEntityThrowable {
 
     public double damageAmount;
 
-    public MixinEntityEgg(World worldIn) {
-        super(worldIn);
-    }
-
     @ModifyArg(method = "onImpact(Lnet/minecraft/util/MovingObjectPosition;)V", at =
-            @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;attackEntityFrom(Lnet/minecraft/util/DamageSource;F)Z"))
+            @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;attackEntityFrom(Lnet/minecraft/util/DamageSource;F)Z")
+        )
     private float onAttackEntityFrom(float damage) {
         return (float) this.damageAmount;
     }
@@ -57,5 +53,19 @@ public abstract class MixinEntityEgg extends EntityThrowable {
 
     public void egg$setDamage(double damage) {
         this.damageAmount = damage;
+    }
+
+    @Override
+    public void readFromNbt(NBTTagCompound compound) {
+        super.readFromNbt(compound);
+        if (compound.hasKey("damageAmount")) {
+            this.damageAmount = compound.getDouble("damageAmount");
+        }
+    }
+
+    @Override
+    public void writeToNbt(NBTTagCompound compound) {
+        super.writeToNbt(compound);
+        compound.setDouble("damageAmount", this.damageAmount);
     }
 }

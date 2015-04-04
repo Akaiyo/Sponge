@@ -47,17 +47,18 @@ import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.WorldInfo;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.spongepowered.api.block.BlockLoc;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.effect.sound.SoundType;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntitySnapshot;
 import org.spongepowered.api.entity.EntityType;
+import org.spongepowered.api.service.permission.context.Context;
 import org.spongepowered.api.service.persistence.data.DataContainer;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.Dimension;
+import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.WorldBorder;
 import org.spongepowered.api.world.biome.BiomeType;
@@ -75,8 +76,6 @@ import org.spongepowered.mod.effect.particle.SpongeParticleEffect;
 import org.spongepowered.mod.effect.particle.SpongeParticleHelper;
 import org.spongepowered.mod.interfaces.IMixinWorld;
 import org.spongepowered.mod.util.SpongeHooks;
-import org.spongepowered.mod.util.VecHelper;
-import org.spongepowered.mod.wrapper.BlockWrapper;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -93,6 +92,7 @@ public abstract class MixinWorld implements World, IMixinWorld {
 
     private boolean keepSpawnLoaded;
     public SpongeConfig<SpongeConfig.WorldConfig> worldConfig;
+    private volatile Context worldContext;
 
     @Shadow
     public WorldProvider provider;
@@ -137,9 +137,8 @@ public abstract class MixinWorld implements World, IMixinWorld {
         if (!client) {
             String providerName = providerIn.getDimensionName().toLowerCase().replace(" ", "_").replace("[^A-Za-z0-9_]", "");
             this.worldConfig =
-                    new SpongeConfig<SpongeConfig.WorldConfig>(SpongeConfig.Type.WORLD, new File(SpongeMod.instance.getConfigDir() +
-                            File
-                            .separator + providerName
+                    new SpongeConfig<SpongeConfig.WorldConfig>(SpongeConfig.Type.WORLD, new File(SpongeMod.instance.getConfigDir()
+                            + File.separator + providerName
                             + File.separator + (providerIn.getDimensionId() == 0 ? "dim0" : providerIn.getSaveFolder().toLowerCase()), "world.conf"),
                             "sponge");
         }
@@ -205,13 +204,13 @@ public abstract class MixinWorld implements World, IMixinWorld {
     }
 
     @Override
-    public BlockLoc getFullBlock(Vector3i position) {
-        return new BlockWrapper(this, VecHelper.toBlockPos(position));
+    public Location getFullBlock(Vector3i position) {
+        return new Location(this, position.toDouble());
     }
 
     @Override
-    public BlockLoc getFullBlock(int x, int y, int z) {
-        return new BlockWrapper(this, x, y, z);
+    public Location getFullBlock(int x, int y, int z) {
+        return new Location(this, new Vector3d(x, y, z));
     }
 
     @Override
@@ -291,12 +290,6 @@ public abstract class MixinWorld implements World, IMixinWorld {
     }
 
     @Override
-    public boolean spawnEntity(Entity entity) {
-        checkNotNull(entity, "Entity cannot be null!");
-        return spawnEntityInWorld(((net.minecraft.entity.Entity) entity));
-    }
-
-    @Override
     public Optional<Entity> createEntity(EntitySnapshot snapshot, Vector3d position) {
         return this.createEntity(snapshot.getType(), position);
     }
@@ -305,6 +298,12 @@ public abstract class MixinWorld implements World, IMixinWorld {
     public Optional<Entity> createEntity(DataContainer entityContainer) {
         // TODO once entity containers are implemented
         return Optional.absent();
+    }
+
+    @Override
+    public boolean spawnEntity(Entity entity) {
+        checkNotNull(entity, "Entity cannot be null!");
+        return spawnEntityInWorld(((net.minecraft.entity.Entity) entity));
     }
 
     @Override
@@ -371,7 +370,7 @@ public abstract class MixinWorld implements World, IMixinWorld {
     @Inject(method = "updateWeatherBody()V", remap = false, at = {
             @At(value = "INVOKE", target = "Lnet/minecraft/world/storage/WorldInfo;setThundering(Z)V"),
             @At(value = "INVOKE", target = "Lnet/minecraft/world/storage/WorldInfo;setRaining(Z)V")
-    })
+        })
     private void onUpdateWeatherBody(CallbackInfo ci) {
         this.weatherStartTime = this.worldInfo.getWorldTotalTime();
     }
@@ -467,11 +466,6 @@ public abstract class MixinWorld implements World, IMixinWorld {
     }
 
     @Override
-    public void setGameRule(String gameRule, String value) {
-        this.worldInfo.getGameRulesInstance().setOrCreateGameRule(gameRule, value);
-    }
-
-    @Override
     public Map<String, String> getGameRules() {
         GameRules gameRules = this.worldInfo.getGameRulesInstance();
         Map<String, String> ruleMap = new HashMap<String, String>();
@@ -486,12 +480,6 @@ public abstract class MixinWorld implements World, IMixinWorld {
         return this.getSeed();
     }
 
-    @Override
-    public void setSeed(long seed) {
-        this.worldInfo.randomSeed = seed;
-        this.rand.setSeed(seed);
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public Iterable<Chunk> getLoadedChunks() {
@@ -504,5 +492,14 @@ public abstract class MixinWorld implements World, IMixinWorld {
             return false;
         }
         return chunk.unloadChunk();
+    }
+
+
+    @Override
+    public Context getContext() {
+        if (this.worldContext == null) {
+            this.worldContext = new Context(Context.WORLD_KEY, getName());
+        }
+        return this.worldContext;
     }
 }

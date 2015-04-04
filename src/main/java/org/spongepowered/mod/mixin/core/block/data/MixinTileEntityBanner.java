@@ -24,17 +24,18 @@
  */
 package org.spongepowered.mod.mixin.core.block.data;
 
+import static org.spongepowered.api.service.persistence.data.DataQuery.of;
+
 import com.google.common.collect.Lists;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import org.spongepowered.api.GameRegistry;
-import org.spongepowered.api.block.data.Banner.PatternLayer;
-import org.spongepowered.api.block.meta.BannerPatternShape;
-import org.spongepowered.api.item.DyeColor;
+import org.spongepowered.api.block.tile.TileEntityType;
+import org.spongepowered.api.block.tile.TileEntityTypes;
+import org.spongepowered.api.block.tile.data.BannerData.PatternLayer;
 import org.spongepowered.api.service.persistence.data.DataContainer;
-import org.spongepowered.api.service.persistence.data.DataQuery;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
@@ -50,7 +51,7 @@ import java.util.List;
 
 @NonnullByDefault
 @Mixin(net.minecraft.tileentity.TileEntityBanner.class)
-@Implements(@Interface(iface = org.spongepowered.api.block.data.Banner.class, prefix = "banner$"))
+@Implements(@Interface(iface = org.spongepowered.api.block.tile.Banner.class, prefix = "banner$"))
 public abstract class MixinTileEntityBanner extends MixinTileEntity {
 
     @Shadow
@@ -66,8 +67,9 @@ public abstract class MixinTileEntityBanner extends MixinTileEntity {
         updatePatterns();
     }
 
-    @Inject(method = "readFromNBT(Lnet/minecraft/nbt/NBTTagCompound;)V", at = @At("RETURN"))
-    private void onReadFromNBT(NBTTagCompound tagCompound, CallbackInfo ci) {
+    @Override
+    public void readFromNbt(NBTTagCompound compound) {
+        super.readFromNbt(compound);
         updatePatterns();
     }
 
@@ -91,44 +93,16 @@ public abstract class MixinTileEntityBanner extends MixinTileEntity {
         this.markDirtyAndUpdate();
     }
 
-    public DyeColor banner$getBaseColor() {
-        return (DyeColor) (Object) EnumDyeColor.byDyeDamage(this.baseColor);
-    }
-
-    public void banner$setBaseColor(DyeColor color) {
-        this.baseColor = EnumDyeColor.valueOf(color.getName().toUpperCase()).getDyeDamage();
-        this.markDirtyAndUpdate();
-    }
-
-    public List<PatternLayer> banner$getPatternList() {
-        return this.patternLayers;
-    }
-
-    public void banner$clearPattern() {
-        for (int i = this.patterns.tagCount() - 1; i >= 0; i--) {
-            this.patterns.removeTag(i);
-        }
-        this.patternLayers.clear();
-        this.markDirtyAndUpdate();
-    }
-
-    public void banner$addPatternLayer(PatternLayer pattern) {
-        banner$addPatternLayer(pattern.getId(), pattern.getColor());
-    }
-
-    public void banner$addPatternLayer(BannerPatternShape patternShape, DyeColor color) {
-        NBTTagCompound nbtPattern = new NBTTagCompound();
-        nbtPattern.setInteger("Color", EnumDyeColor.valueOf(color.getName().toUpperCase()).getDyeDamage());
-        nbtPattern.setString("Pattern", patternShape.getId());
-        this.patterns.appendTag(nbtPattern);
-        this.markDirtyAndUpdate();
+    @Override
+    public TileEntityType getType() {
+        return TileEntityTypes.BANNER;
     }
 
     @Override
     public DataContainer toContainer() {
         DataContainer container = super.toContainer();
-        container.set(new DataQuery("Patterns"), Lists.newArrayList(this.patternLayers));
-        container.set(new DataQuery("Base"), this.baseColor);
+        container.set(of("Patterns"), Lists.newArrayList(this.patternLayers));
+        container.set(of("Base"), this.baseColor);
         return container;
     }
 

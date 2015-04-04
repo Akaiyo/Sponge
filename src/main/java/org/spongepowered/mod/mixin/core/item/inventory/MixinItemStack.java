@@ -24,6 +24,8 @@
  */
 package org.spongepowered.mod.mixin.core.item.inventory;
 
+import static org.spongepowered.api.service.persistence.data.DataQuery.of;
+
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import net.minecraft.item.Item;
@@ -34,7 +36,6 @@ import org.spongepowered.api.item.data.ItemData;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.properties.ItemProperty;
 import org.spongepowered.api.service.persistence.data.DataContainer;
-import org.spongepowered.api.service.persistence.data.DataQuery;
 import org.spongepowered.api.service.persistence.data.MemoryDataContainer;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.asm.mixin.Mixin;
@@ -143,8 +144,8 @@ public abstract class MixinItemStack implements ItemStack {
     @Override
     public DataContainer toContainer() {
         DataContainer container = new MemoryDataContainer();
-        container.set(new DataQuery("ItemType"), this.getItem().getId());
-        container.set(new DataQuery("Quantity"), this.getQuantity());
+        container.set(of("ItemType"), this.getItem().getId());
+        container.set(of("Quantity"), this.getQuantity());
         List<DataContainer> containerList = Lists.newArrayList();
         for (ItemData<?> itemData : getItemData()) {
             containerList.add(itemData.toContainer());

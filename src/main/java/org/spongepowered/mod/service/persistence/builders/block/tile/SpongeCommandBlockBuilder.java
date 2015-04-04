@@ -28,11 +28,10 @@ package org.spongepowered.mod.service.persistence.builders.block.tile;
 import com.google.common.base.Optional;
 import net.minecraft.tileentity.TileEntityCommandBlock;
 import org.spongepowered.api.Game;
-import org.spongepowered.api.block.data.CommandBlock;
+import org.spongepowered.api.block.tile.CommandBlock;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.api.service.persistence.data.DataQuery;
 import org.spongepowered.api.service.persistence.data.DataView;
-import org.spongepowered.api.text.Texts;
 
 public class SpongeCommandBlockBuilder extends AbstractTileBuilder<CommandBlock> {
 
@@ -48,15 +47,18 @@ public class SpongeCommandBlockBuilder extends AbstractTileBuilder<CommandBlock>
             throw new InvalidDataException("The container had insufficient data to create a CommandBlock tile entity!");
         }
         CommandBlock commandblock = commandblockOptional.get();
-        if (!container.contains(new DataQuery("StoredCommand")) || !container.contains(new DataQuery("SuccessCount")) || !container.contains(new DataQuery("DoesTrackOutput"))) {
+        if (!container.contains(new DataQuery("StoredCommand"))
+                || !container.contains(new DataQuery("SuccessCount"))
+                || !container.contains(new DataQuery("DoesTrackOutput"))) {
             throw new InvalidDataException("The provided container does not contain the data to make a CommandBlock!");
         }
-        commandblock.setStoredCommand(container.getString(new DataQuery("StoredCommand")).get());
-        commandblock.setSuccessCount(container.getInt(new DataQuery("SuccessCount")).get());
-        commandblock.shouldTrackOutput(container.getBoolean(new DataQuery("DoesTrackOutput")).get());
-        if (commandblock.doesTrackOutput()) {
-            commandblock.setLastOutput(Texts.fromLegacy(container.getString(new DataQuery("TrackedOutput")).get()));
-        }
+        // TODO Write CommandBlockData
+//        commandblock.setStoredCommand(container.getString(new DataQuery("StoredCommand")).get());
+//        commandblock.setSuccessCount(container.getInt(new DataQuery("SuccessCount")).get());
+//        commandblock.shouldTrackOutput(container.getBoolean(new DataQuery("DoesTrackOutput")).get());
+//        if (commandblock.doesTrackOutput()) {
+//            commandblock.setLastOutput(Texts.fromLegacy(container.getString(new DataQuery("TrackedOutput")).get()));
+//        }
         ((TileEntityCommandBlock) commandblock).validate();
         return Optional.of(commandblock);
     }

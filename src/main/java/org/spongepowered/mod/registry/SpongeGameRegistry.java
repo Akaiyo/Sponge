@@ -68,45 +68,42 @@ import org.spongepowered.api.attribute.AttributeModifierBuilder;
 import org.spongepowered.api.attribute.Operation;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
-import org.spongepowered.api.block.data.Banner;
-import org.spongepowered.api.block.data.BrewingStand;
-import org.spongepowered.api.block.data.Chest;
-import org.spongepowered.api.block.data.CommandBlock;
-import org.spongepowered.api.block.data.Comparator;
-import org.spongepowered.api.block.data.DaylightDetector;
-import org.spongepowered.api.block.data.Dispenser;
-import org.spongepowered.api.block.data.Dropper;
-import org.spongepowered.api.block.data.EnchantmentTable;
-import org.spongepowered.api.block.data.EndPortal;
-import org.spongepowered.api.block.data.EnderChest;
-import org.spongepowered.api.block.data.Furnace;
-import org.spongepowered.api.block.data.Hopper;
-import org.spongepowered.api.block.data.MobSpawner;
-import org.spongepowered.api.block.data.Note;
-import org.spongepowered.api.block.data.Sign;
-import org.spongepowered.api.block.data.Skull;
-import org.spongepowered.api.block.meta.BannerPatternShape;
-import org.spongepowered.api.block.meta.BannerPatternShapes;
-import org.spongepowered.api.block.meta.NotePitch;
-import org.spongepowered.api.block.meta.NotePitches;
-import org.spongepowered.api.block.meta.SkullType;
-import org.spongepowered.api.block.meta.SkullTypes;
+import org.spongepowered.api.block.tile.Banner;
+import org.spongepowered.api.block.tile.CommandBlock;
+import org.spongepowered.api.block.tile.Comparator;
+import org.spongepowered.api.block.tile.DaylightDetector;
+import org.spongepowered.api.block.tile.EnchantmentTable;
+import org.spongepowered.api.block.tile.EndPortal;
+import org.spongepowered.api.block.tile.EnderChest;
+import org.spongepowered.api.block.tile.MobSpawner;
+import org.spongepowered.api.block.tile.Note;
+import org.spongepowered.api.block.tile.Sign;
+import org.spongepowered.api.block.tile.Skull;
+import org.spongepowered.api.block.tile.TileEntityType;
+import org.spongepowered.api.block.tile.carrier.BrewingStand;
+import org.spongepowered.api.block.tile.carrier.Chest;
+import org.spongepowered.api.block.tile.carrier.Dispenser;
+import org.spongepowered.api.block.tile.carrier.Dropper;
+import org.spongepowered.api.block.tile.carrier.Furnace;
+import org.spongepowered.api.block.tile.carrier.Hopper;
+import org.spongepowered.api.block.tile.data.BannerData;
+import org.spongepowered.api.block.tile.data.BannerPatternShape;
+import org.spongepowered.api.block.tile.data.BannerPatternShapes;
+import org.spongepowered.api.block.tile.data.NotePitch;
+import org.spongepowered.api.block.tile.data.NotePitches;
+import org.spongepowered.api.block.tile.data.SkullType;
+import org.spongepowered.api.block.tile.data.SkullTypes;
 import org.spongepowered.api.effect.particle.ParticleEffectBuilder;
 import org.spongepowered.api.effect.particle.ParticleType;
 import org.spongepowered.api.effect.particle.ParticleTypes;
 import org.spongepowered.api.effect.sound.SoundType;
 import org.spongepowered.api.effect.sound.SoundTypes;
 import org.spongepowered.api.entity.EntityInteractionType;
+import org.spongepowered.api.entity.EntityInteractionTypes;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.hanging.art.Art;
 import org.spongepowered.api.entity.hanging.art.Arts;
-import org.spongepowered.api.item.CoalType;
-import org.spongepowered.api.item.CoalTypes;
-import org.spongepowered.api.item.CookedFish;
-import org.spongepowered.api.item.CookedFishes;
-import org.spongepowered.api.item.DyeColor;
-import org.spongepowered.api.item.DyeColors;
 import org.spongepowered.api.entity.living.animal.HorseColor;
 import org.spongepowered.api.entity.living.animal.HorseColors;
 import org.spongepowered.api.entity.living.animal.HorseStyle;
@@ -125,6 +122,12 @@ import org.spongepowered.api.entity.living.villager.Profession;
 import org.spongepowered.api.entity.living.villager.Professions;
 import org.spongepowered.api.entity.player.gamemode.GameMode;
 import org.spongepowered.api.entity.player.gamemode.GameModes;
+import org.spongepowered.api.item.CoalType;
+import org.spongepowered.api.item.CoalTypes;
+import org.spongepowered.api.item.CookedFish;
+import org.spongepowered.api.item.CookedFishes;
+import org.spongepowered.api.item.DyeColor;
+import org.spongepowered.api.item.DyeColors;
 import org.spongepowered.api.item.Enchantment;
 import org.spongepowered.api.item.Enchantments;
 import org.spongepowered.api.item.FireworkEffect;
@@ -141,7 +144,30 @@ import org.spongepowered.api.potion.PotionEffect;
 import org.spongepowered.api.potion.PotionEffectBuilder;
 import org.spongepowered.api.potion.PotionEffectType;
 import org.spongepowered.api.potion.PotionEffectTypes;
+import org.spongepowered.api.resourcepack.ResourcePack;
+import org.spongepowered.api.scoreboard.ScoreboardBuilder;
+import org.spongepowered.api.scoreboard.TeamBuilder;
+import org.spongepowered.api.scoreboard.Visibility;
+import org.spongepowered.api.scoreboard.critieria.Criterion;
+import org.spongepowered.api.scoreboard.displayslot.DisplaySlot;
+import org.spongepowered.api.scoreboard.objective.ObjectiveBuilder;
+import org.spongepowered.api.scoreboard.objective.displaymode.ObjectiveDisplayMode;
 import org.spongepowered.api.service.persistence.SerializationService;
+import org.spongepowered.api.service.persistence.data.DataContainer;
+import org.spongepowered.api.stats.BlockStatistic;
+import org.spongepowered.api.stats.EntityStatistic;
+import org.spongepowered.api.stats.ItemStatistic;
+import org.spongepowered.api.stats.Statistic;
+import org.spongepowered.api.stats.StatisticBuilder;
+import org.spongepowered.api.stats.StatisticBuilder.BlockStatisticBuilder;
+import org.spongepowered.api.stats.StatisticBuilder.EntityStatisticBuilder;
+import org.spongepowered.api.stats.StatisticBuilder.ItemStatisticBuilder;
+import org.spongepowered.api.stats.StatisticBuilder.TeamStatisticBuilder;
+import org.spongepowered.api.stats.StatisticFormat;
+import org.spongepowered.api.stats.StatisticGroup;
+import org.spongepowered.api.stats.TeamStatistic;
+import org.spongepowered.api.stats.achievement.Achievement;
+import org.spongepowered.api.stats.achievement.AchievementBuilder;
 import org.spongepowered.api.status.Favicon;
 import org.spongepowered.api.text.Texts;
 import org.spongepowered.api.text.chat.ChatType;
@@ -161,14 +187,18 @@ import org.spongepowered.api.util.rotation.Rotations;
 import org.spongepowered.api.world.Dimension;
 import org.spongepowered.api.world.DimensionType;
 import org.spongepowered.api.world.DimensionTypes;
+import org.spongepowered.api.world.GeneratorType;
+import org.spongepowered.api.world.WorldBuilder;
+import org.spongepowered.api.world.WorldCreationSettings;
 import org.spongepowered.api.world.biome.BiomeType;
 import org.spongepowered.api.world.biome.BiomeTypes;
 import org.spongepowered.api.world.difficulty.Difficulties;
 import org.spongepowered.api.world.difficulty.Difficulty;
 import org.spongepowered.api.world.gamerule.DefaultGameRules;
+import org.spongepowered.api.world.gen.WorldGenerator;
+import org.spongepowered.api.world.storage.WorldProperties;
 import org.spongepowered.api.world.weather.Weather;
 import org.spongepowered.api.world.weather.Weathers;
-import org.spongepowered.mod.SpongeGame;
 import org.spongepowered.mod.SpongeMod;
 import org.spongepowered.mod.block.meta.SpongeNotePitch;
 import org.spongepowered.mod.block.meta.SpongeSkullType;
@@ -178,6 +208,7 @@ import org.spongepowered.mod.effect.particle.SpongeParticleType;
 import org.spongepowered.mod.effect.sound.SpongeSound;
 import org.spongepowered.mod.entity.SpongeCareer;
 import org.spongepowered.mod.entity.SpongeEntityConstants;
+import org.spongepowered.mod.entity.SpongeEntityInteractionType;
 import org.spongepowered.mod.entity.SpongeEntityMeta;
 import org.spongepowered.mod.entity.SpongeEntityType;
 import org.spongepowered.mod.entity.SpongeProfession;
@@ -238,6 +269,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 @SuppressWarnings("unchecked")
 @NonnullByDefault
@@ -448,6 +480,12 @@ public class SpongeGameRegistry implements GameRegistry {
             .put("NORMAL", (Difficulty) (Object) EnumDifficulty.NORMAL)
             .put("HARD", (Difficulty) (Object) EnumDifficulty.HARD)
             .build();
+    private static final ImmutableMap<String, EntityInteractionType> entityInteractionTypeMappings =
+            new ImmutableMap.Builder<String, EntityInteractionType>()
+                    .put("ATTACK", new SpongeEntityInteractionType("ATTACK"))
+                    .put("PICK_BLOCK", new SpongeEntityInteractionType("PICK_BLOCK"))
+                    .put("USE", new SpongeEntityInteractionType("USE"))
+                    .build();
     private final Map<String, Art> artMappings = Maps.newHashMap();
     private final Map<String, EntityType> entityTypeMappings = Maps.newHashMap();
     public final Map<String, SpongeEntityType> entityIdToTypeMappings = Maps.newHashMap();
@@ -540,6 +578,16 @@ public class SpongeGameRegistry implements GameRegistry {
     @Override
     public List<ItemType> getItems() {
         return ImmutableList.copyOf(this.itemList);
+    }
+
+    @Override
+    public Optional<TileEntityType> getTileEntityType(String id) {
+        return Optional.absent();
+    }
+
+    @Override
+    public Collection<TileEntityType> getTileEntityTypes() {
+        return Collections.emptyList();
     }
 
     @Override
@@ -851,22 +899,22 @@ public class SpongeGameRegistry implements GameRegistry {
 
     @Override
     public Optional<SelectorType> getSelectorType(String name) {
-        return null;
+        throw new UnsupportedOperationException(); // TODO
     }
 
     @Override
     public Collection<ArgumentType<?>> getArgumentTypes() {
-        return null;
+        throw new UnsupportedOperationException(); // TODO
     }
 
     @Override
     public Optional<ArgumentType<?>> getArgumentType(String name) {
-        return null;
+        throw new UnsupportedOperationException(); // TODO
     }
 
     @Override
     public Collection<SelectorType> getSelectorTypes() {
-        return null;
+        throw new UnsupportedOperationException(); // TODO
     }
 
     @Override
@@ -971,12 +1019,12 @@ public class SpongeGameRegistry implements GameRegistry {
 
     @Override
     public Optional<GoldenApple> getGoldenAppleType(String name) {
-        return null;
+        throw new UnsupportedOperationException(); // TODO
     }
 
     @Override
     public Collection<GoldenApple> getGoldenAppleTypes() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -986,7 +1034,7 @@ public class SpongeGameRegistry implements GameRegistry {
 
     @Override
     public AttributeCalculator getAttributeCalculator() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     public void registerEnvironment(DimensionType env) {
@@ -1412,6 +1460,7 @@ public class SpongeGameRegistry implements GameRegistry {
 
     private void setFishes() {
         RegistryHelper.mapFields(Fishes.class, new Function<String, Fish>() {
+
             @Override
             public Fish apply(String input) {
                 Fish fish = Fish.class.cast(ItemFishFood.FishType.valueOf(input));
@@ -1425,14 +1474,16 @@ public class SpongeGameRegistry implements GameRegistry {
         });
 
         RegistryHelper.mapFields(CookedFishes.class, new Function<String, CookedFish>() {
+
             @Override
             public CookedFish apply(String input) {
                 CookedFish fish = CookedFish.class.cast(ItemFishFood.FishType.valueOf(input));
                 if (fish != null) {
                     SpongeGameRegistry.this.cookedFishMappings.put(fish.getId(), fish);
                     return fish;
-                } else
+                } else {
                     return null;
+                }
             }
         });
     }
@@ -1458,6 +1509,10 @@ public class SpongeGameRegistry implements GameRegistry {
         });
     }
 
+    private void setEntityInteractionTypes() {
+        RegistryHelper.mapFields(EntityInteractionTypes.class, SpongeGameRegistry.entityInteractionTypeMappings);
+    }
+
     private void setTextActionFactory() {
         //RegistryHelper.setFactory(TextActions.class, new SpongeTextActionFactory());
     }
@@ -1467,16 +1522,20 @@ public class SpongeGameRegistry implements GameRegistry {
     }
 
     private void setSelectors() {
-        /*try {
-            SelectorTypes.class.getDeclaredField("ALL_PLAYERS").set(null, new SpongeSelectorType("a"));
-            SelectorTypes.class.getDeclaredField("ALL_ENTITIES").set(null, new SpongeSelectorType("e"));
-            SelectorTypes.class.getDeclaredField("NEAREST_PLAYER").set(null, new SpongeSelectorType("p"));
-            SelectorTypes.class.getDeclaredField("RANDOM_PLAYER").set(null, new SpongeSelectorType("r"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        RegistryHelper.setFactory(SelectorTypes.class, new SpongeSelectorTypeFactory());
-        RegistryHelper.setFactory(Selectors.class, new SpongeSelectorFactory());*/
+        /*
+         * try { SelectorTypes.class.getDeclaredField("ALL_PLAYERS").set(null,
+         * new SpongeSelectorType("a"));
+         * SelectorTypes.class.getDeclaredField("ALL_ENTITIES").set(null, new
+         * SpongeSelectorType("e"));
+         * SelectorTypes.class.getDeclaredField("NEAREST_PLAYER").set(null, new
+         * SpongeSelectorType("p"));
+         * SelectorTypes.class.getDeclaredField("RANDOM_PLAYER").set(null, new
+         * SpongeSelectorType("r")); } catch (Exception e) {
+         * e.printStackTrace(); } RegistryHelper.setFactory(SelectorTypes.class,
+         * new SpongeSelectorTypeFactory());
+         * RegistryHelper.setFactory(Selectors.class, new
+         * SpongeSelectorFactory());
+         */
     }
 
     private void setTitleFactory() {
@@ -1559,9 +1618,11 @@ public class SpongeGameRegistry implements GameRegistry {
         soundMappings.put("FALL_SMALL", "game.player.hurt.fall.small");
         soundMappings.put("FIRE", "fire.fire");
         soundMappings.put("FIRE_IGNITE", "fire.ignite");
+        soundMappings.put("FIRECHARGE_USE", "item.fireCharge.use");
         soundMappings.put("FIZZ", "random.fizz");
         soundMappings.put("FUSE", "game.tnt.primed");
         soundMappings.put("GLASS", "dig.glass");
+        soundMappings.put("GUI_BUTTON", "gui.button.press");
         soundMappings.put("HURT_FLESH", "game.player.hurt");
         soundMappings.put("ITEM_BREAK", "random.break");
         soundMappings.put("ITEM_PICKUP", "random.pop");
@@ -1570,6 +1631,13 @@ public class SpongeGameRegistry implements GameRegistry {
         soundMappings.put("LEVEL_UP", "random.levelup");
         soundMappings.put("MINECART_BASE", "minecart.base");
         soundMappings.put("MINECART_INSIDE", "minecart.inside");
+        soundMappings.put("MUSIC_GAME", "music.game");
+        soundMappings.put("MUSIC_CREATIVE", "music.game.creative");
+        soundMappings.put("MUSIC_END", "music.game.end");
+        soundMappings.put("MUSIC_CREDITS", "music.game.end.credits");
+        soundMappings.put("MUSIC_DRAGON", "music.game.end.dragon");
+        soundMappings.put("MUSIC_NETHER", "music.game.nether");
+        soundMappings.put("MUSIC_MENU", "music.menu");
         soundMappings.put("NOTE_BASS", "note.bass");
         soundMappings.put("NOTE_PIANO", "note.harp");
         soundMappings.put("NOTE_BASS_DRUM", "note.bd");
@@ -1583,6 +1651,19 @@ public class SpongeGameRegistry implements GameRegistry {
         soundMappings.put("PORTAL", "portal.portal");
         soundMappings.put("PORTAL_TRAVEL", "portal.travel");
         soundMappings.put("PORTAL_TRIGGER", "portal.trigger");
+        soundMappings.put("POTION_SMASH", "game.potion.smash");
+        soundMappings.put("RECORDS_11", "records.11");
+        soundMappings.put("RECORDS_13", "records.13");
+        soundMappings.put("RECORDS_BLOCKS", "records.blocks");
+        soundMappings.put("RECORDS_CAT", "records.cat");
+        soundMappings.put("RECORDS_CHIRP", "records.chirp");
+        soundMappings.put("RECORDS_FAR", "records.far");
+        soundMappings.put("RECORDS_MALL", "records.mall");
+        soundMappings.put("RECORDS_MELLOHI", "records.mellohi");
+        soundMappings.put("RECORDS_STAL", "records.stal");
+        soundMappings.put("RECORDS_STRAD", "records.strad");
+        soundMappings.put("RECORDS_WAIT", "records.wait");
+        soundMappings.put("RECORDS_WARD", "records.ward");
         soundMappings.put("SHOOT_ARROW", "random.bow");
         soundMappings.put("SPLASH", "random.splash");
         soundMappings.put("SPLASH2", "game.player.swim.splash");
@@ -1618,6 +1699,7 @@ public class SpongeGameRegistry implements GameRegistry {
         soundMappings.put("COW_HURT", "mob.cow.hurt");
         soundMappings.put("COW_WALK", "mob.cow.step");
         soundMappings.put("CREEPER_HISS", "creeper.primed");
+        soundMappings.put("CREEPER_HIT", "mob.creeper.say");
         soundMappings.put("CREEPER_DEATH", "mob.creeper.death");
         soundMappings.put("ENDERDRAGON_DEATH", "mob.enderdragon.end");
         soundMappings.put("ENDERDRAGON_GROWL", "mob.enderdragon.growl");
@@ -1636,6 +1718,9 @@ public class SpongeGameRegistry implements GameRegistry {
         soundMappings.put("GHAST_FIREBALL", "mob.ghast.fireball");
         soundMappings.put("GHAST_MOAN", "mob.ghast.moan");
         soundMappings.put("GUARDIAN_IDLE", "mob.guardian.idle");
+        soundMappings.put("GUARDIAN_ATTACK", "mob.guardian.attack");
+        soundMappings.put("GUARDIAN_CURSE", "mob.guardian.curse");
+        soundMappings.put("GUARDIAN_FLOP", "mob.guardian.flop");
         soundMappings.put("GUARDIAN_ELDER_IDLE", "mob.guardian.elder.idle");
         soundMappings.put("GUARDIAN_LAND_IDLE", "mob.guardian.land.idle");
         soundMappings.put("GUARDIAN_HIT", "mob.guardian.hit");
@@ -1644,6 +1729,12 @@ public class SpongeGameRegistry implements GameRegistry {
         soundMappings.put("GUARDIAN_DEATH", "mob.guardian.death");
         soundMappings.put("GUARDIAN_ELDER_DEATH", "mob.guardian.elder.death");
         soundMappings.put("GUARDIAN_LAND_DEATH", "mob.guardian.land.death");
+        soundMappings.put("HOSTILE_DEATH", "game.hostile.die");
+        soundMappings.put("HOSTILE_HURT", "game.hostile.hurt");
+        soundMappings.put("HOSTILE_FALL_BIG", "game.hostile.hurt.fall.big");
+        soundMappings.put("HOSTILE_FALL_SMALL", "game.hostile.hurt.fall.small");
+        soundMappings.put("HOSTILE_SWIM", "game.hostile.swim");
+        soundMappings.put("HOSTILE_SPLASH", "game.hostile.swim.splash");
         soundMappings.put("IRONGOLEM_DEATH", "mob.irongolem.death");
         soundMappings.put("IRONGOLEM_HIT", "mob.irongolem.hit");
         soundMappings.put("IRONGOLEM_THROW", "mob.irongolem.throw");
@@ -1651,17 +1742,25 @@ public class SpongeGameRegistry implements GameRegistry {
         soundMappings.put("MAGMACUBE_WALK", "mob.magmacube.big");
         soundMappings.put("MAGMACUBE_WALK2", "mob.magmacube.small");
         soundMappings.put("MAGMACUBE_JUMP", "mob.magmacube.jump");
+        soundMappings.put("NEUTRAL_DEATH", "game.neutral.die");
+        soundMappings.put("NEUTRAL_HURT", "game.neutral.hurt");
+        soundMappings.put("NEUTRAL_FALL_BIG", "game.neutral.hurt.fall.big");
+        soundMappings.put("NEUTRAL_FALL_SMALL", "game.neutral.hurt.fall.small");
+        soundMappings.put("NEUTRAL_SWIM", "game.neutral.swim");
+        soundMappings.put("NEUTRAL_SPLASH", "game.neutral.swim.splash");
         soundMappings.put("PIG_IDLE", "mob.pig.say");
         soundMappings.put("PIG_DEATH", "mob.pig.death");
         soundMappings.put("PIG_WALK", "mob.pig.step");
+        soundMappings.put("PLAYER_DEATH", "game.player.die");
         soundMappings.put("RABBIT_IDLE", "mob.rabbit.idle");
         soundMappings.put("RABBIT_HURT", "mob.rabbit.hurt");
+        soundMappings.put("RABBIT_HOP", "mob.rabbit.hop");
         soundMappings.put("RABBIT_DEATH", "mob.rabbit.death");
         soundMappings.put("SHEEP_IDLE", "mob.sheep.say");
         soundMappings.put("SHEEP_SHEAR", "mob.sheep.shear");
         soundMappings.put("SHEEP_WALK", "mob.sheep.step");
         soundMappings.put("SILVERFISH_HIT", "mob.silverfish.hit");
-        soundMappings.put("SILVERFISH_KILL", "mob.silverfish.kill");
+        soundMappings.put("SILVERFISH_DEATH", "mob.silverfish.kill");
         soundMappings.put("SILVERFISH_IDLE", "mob.silverfish.say");
         soundMappings.put("SILVERFISH_WALK", "mob.silverfish.step");
         soundMappings.put("SKELETON_IDLE", "mob.skeleton.say");
@@ -1669,8 +1768,8 @@ public class SpongeGameRegistry implements GameRegistry {
         soundMappings.put("SKELETON_HURT", "mob.skeleton.hurt");
         soundMappings.put("SKELETON_WALK", "mob.skeleton.step");
         soundMappings.put("SLIME_ATTACK", "mob.slime.attack");
-        soundMappings.put("SLIME_WALK", "mob.slime.small");
-        soundMappings.put("SLIME_WALK2", "mob.slime.big");
+        soundMappings.put("SLIME_WALK", "mob.slime.big");
+        soundMappings.put("SLIME_WALK2", "mob.slime.small");
         soundMappings.put("SPIDER_IDLE", "mob.spider.say");
         soundMappings.put("SPIDER_DEATH", "mob.spider.death");
         soundMappings.put("SPIDER_WALK", "mob.spider.step");
@@ -1767,7 +1866,7 @@ public class SpongeGameRegistry implements GameRegistry {
         SerializationService service = game.getServiceManager().provide(SerializationService.class).get();
         // TileEntities
         service.registerBuilder(Banner.class, new SpongeBannerBuilder(game));
-        service.registerBuilder(Banner.PatternLayer.class, new SpongePatternLayerBuilder(game));
+        service.registerBuilder(BannerData.PatternLayer.class, new SpongePatternLayerBuilder(game));
         service.registerBuilder(BrewingStand.class, new SpongeBrewingStandBuilder(game));
         service.registerBuilder(Chest.class, new SpongeChestBuilder(game));
         service.registerBuilder(CommandBlock.class, new SpongeCommandBlockBuilder(game));
@@ -1798,6 +1897,196 @@ public class SpongeGameRegistry implements GameRegistry {
         // TODO someone needs to write a User implementation...
     }
 
+    @Override
+    public WorldBuilder getWorldBuilder() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public WorldBuilder getWorldBuilder(WorldCreationSettings settings) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public WorldBuilder getWorldBuilder(WorldProperties properties) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Optional<GeneratorType> getGeneratorType(String name) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Collection<GeneratorType> getGeneratorTypes() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public GeneratorType registerGeneratorType(String name, Callable<WorldGenerator> generator) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public GeneratorType registerGeneratorType(String name, Callable<WorldGenerator> generator, DataContainer settings) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Optional<Statistic> getStatistic(String name) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Optional<EntityStatistic> getEntityStatistic(StatisticGroup statisticGroup, EntityType entityType) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Optional<ItemStatistic> getItemStatistic(StatisticGroup statisticGroup, ItemType itemType) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Optional<BlockStatistic> getBlockStatistic(StatisticGroup statisticGroup, BlockType blockType) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Optional<TeamStatistic> getTeamStatistic(StatisticGroup statisticGroup, TextColor teamColor) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Collection<Statistic> getStatistics(StatisticGroup statisticGroup) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Collection<Statistic> getStatistics() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public StatisticBuilder getStatisticBuilder() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public EntityStatisticBuilder getEntityStatisticBuilder() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public BlockStatisticBuilder getBlockStatisticBuilder() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public ItemStatisticBuilder getItemStatisticBuilder() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public TeamStatisticBuilder getTeamStatisticBuilder() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public void registerStatistic(Statistic stat) {
+        // TODO
+    }
+
+    @Override
+    public Optional<StatisticFormat> getStatisticFormat(String name) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Collection<StatisticFormat> getStatisticFormats() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Optional<Achievement> getAchievement(String name) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Collection<Achievement> getAchievements() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public AchievementBuilder getAchievementBuilder() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Optional<ResourcePack> getById(String id) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public ObjectiveBuilder getObjectiveBuilder() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public TeamBuilder getTeamBuilder() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public ScoreboardBuilder getScoreboardBuilder() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Optional<DisplaySlot> getDisplaySlot(String name) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Optional<DisplaySlot> getDisplaySlotForColor(TextColor color) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Collection<DisplaySlot> getDisplaySlots() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Optional<Visibility> getVisibility(String name) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Collection<Visibility> getVisibilities() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Optional<Criterion> getCriterion(String name) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Collection<Criterion> getCriteria() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Optional<ObjectiveDisplayMode> getObjectiveDisplayMode(String name) {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Collection<ObjectiveDisplayMode> getObjectiveDisplayModes() {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
     public void preInit() {
         setupSerialization();
     }
@@ -1823,6 +2112,7 @@ public class SpongeGameRegistry implements GameRegistry {
         setGameModes();
         setSounds();
         setDifficulties();
+        setEntityInteractionTypes();
     }
 
     public void postInit() {

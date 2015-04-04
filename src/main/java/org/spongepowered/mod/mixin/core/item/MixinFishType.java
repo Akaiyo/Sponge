@@ -25,10 +25,11 @@
 
 package org.spongepowered.mod.mixin.core.item;
 
+import static org.spongepowered.api.service.persistence.data.DataQuery.of;
+
 import net.minecraft.item.ItemFishFood;
 import org.spongepowered.api.item.Fish;
 import org.spongepowered.api.service.persistence.data.DataContainer;
-import org.spongepowered.api.service.persistence.data.DataQuery;
 import org.spongepowered.api.service.persistence.data.MemoryDataContainer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -47,7 +48,7 @@ public class MixinFishType implements Fish {
     @Override
     public DataContainer toContainer() {
         DataContainer container = new MemoryDataContainer();
-        container.set(new DataQuery("FishType"), this.unlocalizedName);
+        container.set(of("FishType"), this.unlocalizedName);
         return container;
     }
 }

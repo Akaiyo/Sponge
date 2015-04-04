@@ -25,6 +25,7 @@
 package org.spongepowered.mod.item.data;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.spongepowered.api.service.persistence.data.DataQuery.of;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
@@ -38,7 +39,6 @@ import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.data.DurabilityData;
 import org.spongepowered.api.item.data.ItemData;
 import org.spongepowered.api.service.persistence.data.DataContainer;
-import org.spongepowered.api.service.persistence.data.DataQuery;
 import org.spongepowered.api.service.persistence.data.MemoryDataContainer;
 
 import java.util.Collection;
@@ -91,7 +91,7 @@ public class SpongeDurabilityData extends AbstractItemData implements Durability
     @Override
     public DataContainer toContainer() {
         DataContainer container = new MemoryDataContainer();
-        container.set(new DataQuery("Unbreakable"), this.breakable);
+        container.set(of("Unbreakable"), this.breakable);
         return container;
     }
 

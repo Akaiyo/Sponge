@@ -24,18 +24,15 @@
  */
 package org.spongepowered.mod.mixin.core.block.data;
 
-import org.spongepowered.api.block.data.Note;
-import org.spongepowered.api.block.meta.NotePitch;
+import static org.spongepowered.api.service.persistence.data.DataQuery.of;
+
+import org.spongepowered.api.block.tile.Note;
 import org.spongepowered.api.service.persistence.data.DataContainer;
-import org.spongepowered.api.service.persistence.data.DataQuery;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.mod.SpongeMod;
-
-import java.util.List;
 
 @NonnullByDefault
 @Implements(@Interface(iface = Note.class, prefix = "note$"))
@@ -45,18 +42,10 @@ public abstract class MixinTileEntityNote extends MixinTileEntity {
     @Shadow
     public byte note;
 
-    public NotePitch note$getNote() {
-        return ((List<NotePitch>) SpongeMod.instance.getGame().getRegistry().getNotePitches()).get(this.note);
-    }
-
-    public void note$setNote(NotePitch pitch) {
-        this.note = pitch.getId();
-    }
-
     @Override
     public DataContainer toContainer() {
         DataContainer container = super.toContainer();
-        container.set(new DataQuery("Note"), this.note);
+        container.set(of("Note"), this.note);
         return container;
     }
 }

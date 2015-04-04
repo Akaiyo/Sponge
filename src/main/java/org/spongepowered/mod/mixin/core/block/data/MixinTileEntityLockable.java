@@ -24,13 +24,14 @@
  */
 package org.spongepowered.mod.mixin.core.block.data;
 
+import static org.spongepowered.api.service.persistence.data.DataQuery.of;
+
 import com.google.common.collect.Lists;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.LockCode;
-import org.spongepowered.api.block.data.Lockable;
+import org.spongepowered.api.block.tile.carrier.TileEntityCarrier;
 import org.spongepowered.api.service.persistence.data.DataContainer;
-import org.spongepowered.api.service.persistence.data.DataQuery;
 import org.spongepowered.api.service.persistence.data.DataView;
 import org.spongepowered.api.service.persistence.data.MemoryDataContainer;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
@@ -42,38 +43,30 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.util.List;
 
 @NonnullByDefault
-@Implements(@Interface(iface = Lockable.class, prefix = "lockable$"))
+@Implements(@Interface(iface = TileEntityCarrier.class, prefix = "lockable$"))
 @Mixin(net.minecraft.tileentity.TileEntityLockable.class)
 public abstract class MixinTileEntityLockable extends MixinTileEntity implements IInventory {
 
     @Shadow
     private LockCode code;
 
-    public String getLockToken() {
-        return this.code.getLock();
-    }
-
-    public void setLockToken(String token) {
-        this.code = new LockCode(token);
-    }
-
     @Override
     public DataContainer toContainer() {
         DataContainer container = super.toContainer();
         if (this.code != null) {
-            container.set(new DataQuery("Lock"), this.code.getLock());
+            container.set(of("Lock"), this.code.getLock());
         }
         List<DataView> items = Lists.newArrayList();
         for (int i = 0; i < getSizeInventory(); i++) {
             ItemStack stack = getStackInSlot(i);
             if (stack != null) {
                 DataContainer stackView = new MemoryDataContainer();
-                stackView.set(new DataQuery("Slot"), i);
-                stackView.set(new DataQuery("Item"), ((org.spongepowered.api.item.inventory.ItemStack) stack).toContainer());
+                stackView.set(of("Slot"), i);
+                stackView.set(of("Item"), ((org.spongepowered.api.item.inventory.ItemStack) stack).toContainer());
                 items.add(stackView);
             }
         }
-        container.set(new DataQuery("Contents"), items);
+        container.set(of("Contents"), items);
         return container;
     }
 }

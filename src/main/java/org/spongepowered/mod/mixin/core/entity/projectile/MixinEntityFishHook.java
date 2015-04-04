@@ -31,6 +31,7 @@ import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityFishHook;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
@@ -45,9 +46,11 @@ import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.SoftOverride;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.mod.SpongeMod;
+import org.spongepowered.mod.entity.projectile.ProjectileSourceSerializer;
 import org.spongepowered.mod.interfaces.IMixinEntityFishHook;
 
 import javax.annotation.Nullable;
@@ -55,6 +58,8 @@ import javax.annotation.Nullable;
 @NonnullByDefault
 @Mixin(EntityFishHook.class)
 public abstract class MixinEntityFishHook extends Entity implements FishHook, IMixinEntityFishHook {
+
+    private MixinEntityFishHook super$;
 
     private double damageAmount;
 
@@ -114,7 +119,8 @@ public abstract class MixinEntityFishHook extends Entity implements FishHook, IM
     }
 
     @Redirect(method = "onUpdate()V", at =
-            @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;attackEntityFrom(Lnet/minecraft/util/DamageSource;F)Z"))
+            @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;attackEntityFrom(Lnet/minecraft/util/DamageSource;F)Z")
+        )
     public boolean onAttackEntityFrom(Entity this$0, DamageSource damageSource, float damage) {
         PlayerHookedEntityEvent event = SpongeEventFactory.createPlayerHookedEntityEvent(SpongeMod.instance.getGame(), (Player) this.angler, this,
                 (org.spongepowered.api.entity.Entity) this$0);
@@ -206,4 +212,19 @@ public abstract class MixinEntityFishHook extends Entity implements FishHook, IM
         this.fishingRod = fishingRod;
     }
 
+    @SoftOverride
+    public void readFromNbt(NBTTagCompound compound) {
+        this.super$.readFromNbt(compound);
+        if (compound.hasKey("damageAmount")) {
+            this.damageAmount = compound.getDouble("damageAmount");
+        }
+        ProjectileSourceSerializer.readSourceFromNbt(compound, this);
+    }
+
+    @SoftOverride
+    public void writeToNbt(NBTTagCompound compound) {
+        this.super$.writeToNbt(compound);
+        compound.setDouble("damageAmount", this.damageAmount);
+        ProjectileSourceSerializer.writeSourceToNbt(compound, this.projectileSource, this.angler);
+    }
 }

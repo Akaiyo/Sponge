@@ -24,21 +24,17 @@
  */
 package org.spongepowered.mod.mixin.core.block.data;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.spongepowered.api.service.persistence.data.DataQuery.of;
 
 import com.google.common.collect.Lists;
 import net.minecraft.util.IChatComponent;
-import org.spongepowered.api.block.data.Sign;
+import org.spongepowered.api.block.tile.Sign;
 import org.spongepowered.api.service.persistence.data.DataContainer;
-import org.spongepowered.api.service.persistence.data.DataQuery;
-import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.mod.text.SpongeChatComponent;
-import org.spongepowered.mod.text.SpongeText;
 
 import java.util.List;
 
@@ -50,38 +46,16 @@ public abstract class MixinTileEntitySign extends MixinTileEntity {
     @Shadow
     public IChatComponent[] signText;
 
-    public Text[] sign$getLines() {
-        return new Text[]{
-                ((SpongeChatComponent) this.signText[0]).toText(),
-                ((SpongeChatComponent) this.signText[1]).toText(),
-                ((SpongeChatComponent) this.signText[2]).toText(),
-                ((SpongeChatComponent) this.signText[3]).toText()
-        };
-    }
 
-    public void sign$setLines(Text... lines) {
-        checkArgument(lines.length <= 4, "Only 4 lines can be entered on a sign!");
-        for (int i = 0; i < lines.length; i++) {
-            this.signText[i] = ((SpongeText) lines[i]).toComponent();
-        }
-    }
-
-    public Text sign$getLine(int index) throws IndexOutOfBoundsException {
-        return ((SpongeChatComponent) this.signText[index]).toText();
-    }
-
-    public void sign$setLine(int index, Text text) throws IndexOutOfBoundsException {
-        this.signText[index] = ((SpongeText) text).toComponent();
-    }
 
     @Override
     public DataContainer toContainer() {
         DataContainer container = super.toContainer();
         List<String> lines = Lists.newArrayListWithExpectedSize(4);
-        for (Text message: this.sign$getLines()) {
-            lines.add(message.toString());
-        }
-        container.set(new DataQuery("Lines"), lines);
+//        for (Text message: this.sign$getLines()) {
+//            lines.add(message.toString());
+//        }
+        container.set(of("Lines"), lines);
         return container;
     }
 }

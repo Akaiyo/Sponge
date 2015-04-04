@@ -24,9 +24,10 @@
  */
 package org.spongepowered.mod.mixin.core.block.data;
 
-import org.spongepowered.api.block.data.Furnace;
+import static org.spongepowered.api.service.persistence.data.DataQuery.of;
+
+import org.spongepowered.api.block.tile.carrier.Furnace;
 import org.spongepowered.api.service.persistence.data.DataContainer;
-import org.spongepowered.api.service.persistence.data.DataQuery;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
@@ -39,38 +40,16 @@ import org.spongepowered.asm.mixin.Shadow;
 public abstract class MixinTileEntityFurnace extends MixinTileEntityLockable {
 
     @Shadow
-    public abstract int getField(int id);
-
-    @Shadow
-    public abstract void setField(int id, int value);
-
-    @Shadow
     private String furnaceCustomName;
-
-    public int furnace$getRemainingBurnTime() {
-        return getField(0);
-    }
-
-    public void furnace$setRemainingBurnTime(int time) {
-        setField(0, time);
-    }
-
-    public int furnace$getRemainingCookTime() {
-        return getField(3) - getField(2);
-    }
-
-    public void furnace$setRemainingCookTime(int time) {
-        setField(2, getField(3) - time);
-    }
 
     @Override
     public DataContainer toContainer() {
         DataContainer container = super.toContainer();
-        container.set(new DataQuery("BurnTime"), this.furnace$getRemainingBurnTime());
-        container.set(new DataQuery("CookTime"), this.furnace$getRemainingCookTime());
-        container.set(new DataQuery("CookTimeTotal"), this.getField(3));
+        container.set(of("BurnTime"), this.getField(0));
+        container.set(of("CookTime"), this.getField(3) - this.getField(2));
+        container.set(of("CookTimeTotal"), this.getField(3));
         if (this.furnaceCustomName != null) {
-            container.set(new DataQuery("CustomName"), this.furnaceCustomName);
+            container.set(of("CustomName"), this.furnaceCustomName);
         }
         return container;
     }

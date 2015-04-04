@@ -25,6 +25,7 @@
 package org.spongepowered.mod.item.data;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.spongepowered.api.service.persistence.data.DataQuery.of;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -38,7 +39,6 @@ import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.data.EnchantmentData;
 import org.spongepowered.api.item.data.ItemData;
 import org.spongepowered.api.service.persistence.data.DataContainer;
-import org.spongepowered.api.service.persistence.data.DataQuery;
 import org.spongepowered.api.service.persistence.data.DataView;
 import org.spongepowered.api.service.persistence.data.MemoryDataContainer;
 
@@ -188,7 +188,7 @@ public class SpongeEnchantmentItemData extends AbstractItemData implements Encha
             SpongeEnchantment enchantment = new SpongeEnchantment(entry.getKey(), entry.getValue());
             enchantments.add(enchantment.toContainer());
         }
-        container.set(new DataQuery("ench"), enchantments);
+        container.set(of("ench"), enchantments);
         return container;
     }
 

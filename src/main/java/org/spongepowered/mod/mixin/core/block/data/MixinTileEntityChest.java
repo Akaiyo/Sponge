@@ -24,9 +24,10 @@
  */
 package org.spongepowered.mod.mixin.core.block.data;
 
-import org.spongepowered.api.block.data.Chest;
+import static org.spongepowered.api.service.persistence.data.DataQuery.of;
+
+import org.spongepowered.api.block.tile.carrier.Chest;
 import org.spongepowered.api.service.persistence.data.DataContainer;
-import org.spongepowered.api.service.persistence.data.DataQuery;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
@@ -45,7 +46,7 @@ public abstract class MixinTileEntityChest extends MixinTileEntityLockable {
     public DataContainer toContainer() {
         DataContainer container = super.toContainer();
         if (this.customName != null) {
-            container.set(new DataQuery("CustomName"), this.customName);
+            container.set(of("CustomName"), this.customName);
         }
         return container;
     }

@@ -24,23 +24,13 @@
  */
 package org.spongepowered.mod.mixin.core.block.data;
 
-import com.google.common.base.Optional;
-import net.minecraft.tileentity.TileEntity;
-import org.spongepowered.api.GameProfile;
-import org.spongepowered.api.block.data.Skull;
-import org.spongepowered.api.block.meta.SkullType;
+import org.spongepowered.api.block.tile.Skull;
 import org.spongepowered.api.service.persistence.data.DataContainer;
-import org.spongepowered.api.service.persistence.data.DataQuery;
-import org.spongepowered.api.service.persistence.data.DataView;
-import org.spongepowered.api.util.Direction;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.mod.SpongeMod;
-
-import java.util.List;
 
 @NonnullByDefault
 @Implements(@Interface(iface = Skull.class, prefix = "skull$"))
@@ -62,41 +52,9 @@ public abstract class MixinTileEntitySkull extends MixinTileEntity {
     @Shadow
     public abstract int getSkullType();
 
-    public Direction skull$getRotation() {
-        return null; //TODO
-    }
-
-    public void skull$setRotation(Direction rotation) {
-        //TODO
-    }
-
-    public Optional<GameProfile> skull$getPlayer() {
-        return Optional.fromNullable((GameProfile) getPlayerProfile());
-    }
-
-    public void skull$setPlayer(GameProfile player) {
-        setPlayerProfile((com.mojang.authlib.GameProfile) player);
-    }
-
-    public SkullType skull$getType() {
-        // TODO: Fix GameRegistry for API changes
-        return ((List<SkullType>) SpongeMod.instance.getGame().getRegistry().getSkullTypes()).get(getSkullType());
-    }
-
-    public void skull$setType(SkullType type) {
-        setType(type.getId());
-    }
-
     @Override
     public DataContainer toContainer() {
         DataContainer container = super.toContainer();
-        container.set(new DataQuery("Type"), this.getSkullType());
-        container.set(new DataQuery("Rotation"), this.skull$getRotation().ordinal());
-        if (this.skull$getPlayer().isPresent()) {
-            DataView ownerView = container.createView(new DataQuery("Owner"));
-            ownerView.set(new DataQuery("UniqueId"), this.skull$getPlayer().get().getUniqueId().toString());
-            ownerView.set(new DataQuery("UserName"), this.skull$getPlayer().get().getName());
-        }
         return container;
     }
 }
